@@ -1,6 +1,6 @@
 // Copied from LabFiles
 
-package com.tadder3.d288.config;
+package com.example.demo.config;
 
 import com.tadder3.d288.entities.*;
 import org.springframework.context.annotation.Configuration;

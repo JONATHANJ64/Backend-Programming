@@ -19,7 +19,6 @@ public class BootStrapData implements CommandLineRunner {
         // Clear the entire repository
         customerRepository.deleteAll();
 
-        // Save sample customers
         Customer customer1 = new Customer("Jim", "Dough", "123 Main Street", "54321", "111-222-3333", 10L);
         customerRepository.save(customer1);
 

@@ -4,49 +4,45 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.sql.Date;
+import java.util.Set;
+
 @Entity
-@Table(name="cart_items")
+@Table(name = "cart_items")
 @Getter
 @Setter
-
 public class CartItem {
 
-    //id: Long
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cart_item_id")
-    Long id;
+    private Long id;
 
-    //vacation: Vacation
     @ManyToOne
-    @JoinColumn(name="vacation_id",nullable = false)
-    Vacation vacation;
+    @JoinColumn(name = "vacation_id")
+    private Vacation vacation;
 
-    //Many To Many( excursions: Set<Excursion> )
-    @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinTable(name="excursion_cartitem", joinColumns = @JoinColumn(name="cart_item_id"), inverseJoinColumns = @JoinColumn(name="excursion_id"))
-    Set<Excursion> excursions = new HashSet<Excursion>();
+    @ManyToMany
+    @JoinTable(
+            name = "excursion_cartitem",
+            joinColumns = @JoinColumn(name = "cart_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "excursion_id")
+    )
+    Set<Excursion> excursion;
 
-    //Many To One( cart: Cart)
     @ManyToOne
-    @JoinColumn(name="cart_id",nullable = false)
-    Cart cart;
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
 
-    //create_date: Date
-    @Column(name = "create_date")
     @CreationTimestamp
-    Date create_date;
+    @Column(name = "create_date")
+    private Date create_date;
 
-    //last_update: Date
-    @Column(name = "last_update")
     @UpdateTimestamp
-    Date last_update;
+    @Column(name = "last_update")
+    private Date last_update;
+
 }

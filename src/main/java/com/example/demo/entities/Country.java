@@ -1,20 +1,16 @@
 package com.example.demo.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
+import java.sql.Date;
 import java.util.Set;
 
 @Entity
-@Table(name="countries")
+@Table(name = "countries")
 @Getter
 @Setter
 public class Country {
@@ -22,20 +18,20 @@ public class Country {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "country_id")
-    Long id;
+    private Long id;
 
     @Column(name = "country")
-    String country_name;
+    private String country_name;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {"hibernateLazyInitializer","handler"} )
-    Set<Division> divisions;
-
-    @Column(name = "create_Date")
     @CreationTimestamp
-    Date create_date;
+    @Column(name = "create_date")
+    private Date create_date;
 
-    @Column(name = "last_Update")
     @UpdateTimestamp
-    Date last_update;
+    @Column(name = "last_update")
+    private Date last_update;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Division> divisions;
+
 }

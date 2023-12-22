@@ -1,5 +1,6 @@
 package com.example.demo.bootstrap;
 
+import com.example.demo.dao.DivisionRepository;
 import com.example.demo.entities.Customer;
 import com.example.demo.dao.CustomerRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -9,30 +10,57 @@ import org.springframework.stereotype.Component;
 public class BootStrapData implements CommandLineRunner {
 
     private final CustomerRepository customerRepository;
+    private final DivisionRepository divisionRepository;
 
-    public BootStrapData(CustomerRepository customerRepository) {
+    public BootStrapData(CustomerRepository customerRepository, DivisionRepository divisionRepository){
         this.customerRepository = customerRepository;
+        this.divisionRepository = divisionRepository;
     }
+
 
     @Override
     public void run(String... args) throws Exception {
-        // Clear the entire repository
-        customerRepository.deleteAll();
+        Customer jordan = new Customer();
+        jordan.setFirstName("Jordan");
+        jordan.setLastName("Haugen");
+        jordan.setAddress("123 whitehouse lane");
+        jordan.setPostal_code("12039");
+        jordan.setPhone("2149834923");
 
-        Customer customer1 = new Customer("Jim", "Dough", "123 Main Street", "54321", "111-222-3333", 10L);
-        customerRepository.save(customer1);
+        Customer michael = new Customer();
+        michael.setFirstName("Michael");
+        michael.setLastName("Smith");
+        michael.setAddress("304 check lane");
+        michael.setPostal_code("43768");
+        michael.setPhone("2144737923");
 
-        Customer customer2 = new Customer("Jane", "Smith", "456 Oak Avenue", "54322", "111-222-4444", 15L);
-        customerRepository.save(customer2);
+        Customer steve = new Customer();
+        steve.setFirstName("Steve");
+        steve.setLastName("Doe");
+        steve.setAddress("test address");
+        steve.setPostal_code("51517");
+        steve.setPhone("2149834923");
 
-        Customer customer3 = new Customer("Bob", "Johnson", "789 Pine Street", "54323", "111-222-5555", 20L);
-        customerRepository.save(customer3);
 
-        Customer customer4 = new Customer("Alice", "Williams", "101 Elm Road", "54324", "111-222-6666", 25L);
-        customerRepository.save(customer4);
+        Customer joe = new Customer();
+        joe.setFirstName("Joe");
+        joe.setLastName("Shmoe");
+        joe.setAddress("12345 Candice ave");
+        joe.setPostal_code("29481");
+        joe.setPhone("268456162");
 
-        Customer customer5 = new Customer("Charlie", "Brown", "202 Cedar Lane", "54325", "111-222-7777", 30L);
-        customerRepository.save(customer5);
+        Customer nick = new Customer();
+        nick.setFirstName("Nick");
+        nick.setLastName("Ferry");
+        nick.setAddress("South Pole");
+        nick.setPostal_code("23853");
+        nick.setPhone("151616516");
+
+        customerRepository.save(jordan);
+        customerRepository.save(michael);
+        customerRepository.save(steve);
+        customerRepository.save(joe);
+        customerRepository.save(nick);
     }
-}
 
+}

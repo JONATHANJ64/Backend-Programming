@@ -1,5 +1,6 @@
 package com.example.demo.services;
 
+import com.example.demo.dao.CustomerRepository;
 import com.example.demo.entities.Cart;
 import com.example.demo.entities.CartItem;
 import com.example.demo.entities.Customer;
@@ -14,11 +15,14 @@ import java.util.UUID;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService{
+    private CustomerRepository customerRepository;
     private CartRepository cartRepository;
-    @Autowired
-    public CheckoutServiceImpl(CartRepository cartRepository)
-    {
+
+
+    public CheckoutServiceImpl(CustomerRepository customerRepository, CartRepository cartRepository) {
+        this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
+
     }
 
     @Override
@@ -33,11 +37,15 @@ public class CheckoutServiceImpl implements CheckoutService{
         Set<CartItem> cartItems = purchase.getCartItems();
         cartItems.forEach(item -> cart.add(item));
 
-        cart.setStatus(StatusType.CartStatus.ordered);
-
+        // Set the customer for the cart
         Customer customer = purchase.getCustomer();
-        customer.add(cart);
+        cart.setCustomer(customer);
         cartRepository.save(cart);
+
+        // Handle null customer or empty cart items
+        if (customer == null || cartItems.isEmpty()) {
+            throw new IllegalArgumentException("Customer cannot be null and cart items cannot be empty.");
+        }
 
         return new PurchaseResponse(orderTrackingNumber);
     }

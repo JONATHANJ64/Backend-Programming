@@ -44,5 +44,4 @@ public class Excursion {
 
     @ManyToMany(mappedBy = "excursion")
     Set<CartItem> cart_item;
-
 }

@@ -1,59 +1,88 @@
 package com.example.demo.services;
 
-import com.example.demo.dao.CustomerRepository;
-import com.example.demo.entities.Cart;
-import com.example.demo.entities.CartItem;
-import com.example.demo.entities.Customer;
-import com.example.demo.entities.StatusType;
-import com.example.demo.dao.CartRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dao.*;
+import com.example.demo.entities.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-
 @Service
-public class CheckoutServiceImpl implements CheckoutService{
+public class CheckoutServiceImpl implements CheckoutService {
     private CustomerRepository customerRepository;
     private CartRepository cartRepository;
+    private VacationRepository vacationRepository;
+    private ExcursionRepository excursionRepository;
+    private CartItemRepository cartItemRepository;
 
-
-    public CheckoutServiceImpl(CustomerRepository customerRepository, CartRepository cartRepository) {
+    public CheckoutServiceImpl(CustomerRepository customerRepository, CartRepository cartRepository,
+                        VacationRepository vacationRepository, ExcursionRepository excursionRepository,
+                        CartItemRepository cartItemRepository) {
         this.customerRepository = customerRepository;
         this.cartRepository = cartRepository;
-
+        this.vacationRepository = vacationRepository;
+        this.excursionRepository = excursionRepository;
+        this.cartItemRepository = cartItemRepository;
     }
 
     @Override
     @Transactional
     public PurchaseResponse placeOrder(Purchase purchase) {
-
-        Cart cart = purchase.getCart();
-
+        // Generate tracking number
         String orderTrackingNumber = generateOrderTrackingNumber();
-        cart.setOrderTrackingNumber(orderTrackingNumber);
+        purchase.getCart().setOrderTrackingNumber(orderTrackingNumber);
 
-        Set<CartItem> cartItems = purchase.getCartItems();
-        cartItems.forEach(item -> cart.add(item));
+        purchase.getCart().setStatus(StatusType.CartStatus.ordered);
 
-        // Set the customer for the cart
+        // Fetch the vacation
+        Vacation vacation = purchase.getCartItems()
+                .stream()
+                .findFirst()
+                .map(CartItem::getVacation)
+                .orElseThrow(() -> new IllegalArgumentException("Vacation cannot be null."));
+
+        vacationRepository.save(vacation);
+
+        Cart savedCart = cartRepository.save(purchase.getCart());
+
+        Optional.ofNullable(vacation.getExcursions())
+                .ifPresent(excursions -> excursions.forEach(excursion -> {
+                    if (excursion.getVacation() == null) {
+                        excursion.setVacation(vacation);
+                    }
+                    // Save each excursion
+                    excursionRepository.save(excursion);
+                }));
+        // Save the cart items
+        purchase.getCartItems().forEach(cartItem -> {
+            cartItem.setCart(savedCart);
+
+            cartItemRepository.save(cartItem);
+        });
+
+        purchase.getCartItems().forEach(cartItem -> {
+            Set<Excursion> excursionsForCartItem = cartItem.getExcursions();
+            if (excursionsForCartItem != null) {
+                excursionsForCartItem.forEach(excursion -> {
+                    Excursion persistedExcursion = excursionRepository.findById(excursion.getId()).orElse(null);
+                    if (persistedExcursion != null) {
+                        persistedExcursion.getCart_items().add(cartItem);
+                        excursionRepository.save(persistedExcursion);
+                    }
+                });
+            }
+        });
+
+        // Save the customer last as it's the top-level entity
         Customer customer = purchase.getCustomer();
-        cart.setCustomer(customer);
-        cartRepository.save(cart);
-
-        // Handle null customer or empty cart items
-        if (customer == null || cartItems.isEmpty()) {
-            throw new IllegalArgumentException("Customer cannot be null and cart items cannot be empty.");
-        }
+        customerRepository.save(customer);
 
         return new PurchaseResponse(orderTrackingNumber);
     }
 
     private String generateOrderTrackingNumber() {
-
         return UUID.randomUUID().toString();
-
     }
-
 }
